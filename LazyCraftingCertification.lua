@@ -1,29 +1,27 @@
 LazyCraftingCertification = {}
  
--- This isn't strictly necessary, but we'll use this string later when registering events.
--- Better to define it in a single place rather than retyping the same string.
 LazyCraftingCertification.name = "LazyCraftingCertification"
- 
--- Next we create a function that will initialize our addon
-function LazyCraftingCertification.Initialize()
-  -- ...but we don't have anything to initialize yet. We'll come back to this.
-  	-- AddRequestingAddon(addonName, autocraft, functionCallback, optionalDebugAuthor, styleTable)
-    -- local interactionTable = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.ADDON_NAME, true, LLC_CallbackFunction, debugAuthor, styles)
-    -- LazyAlchemyLearner.LLC = LibLazyCrafting:AddRequestingAddon(LazyAlchemyLearner.name,true, function()end)
-    -- local interactionTable = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
-    d("FGHDHSH loaded up ")
-    LazyCraftingCertification.LLC = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
-  
+local function LCCGetCurrentPlayerRacialStyleId()
+  -- we need the pattern ID for the current character race since it'll know that pattern by default
+  local characterId = GetCurrentCharacterId()
+  for i = 1, GetNumCharacters() do
+    local name, gender, level, classId, raceId, alliance, id, locationId = GetCharacterInfo(i)
+    if (characterId == id) then
+      if raceId == 10 then return 34 end -- imperial
+      return raceId
+    end
+ end
 end
  
--- Then we create an event handler function which will be called when the "addon loaded" event
--- occurs. We'll use this to initialize our addon after all of its resources are fully loaded.
+function LazyCraftingCertification.Initialize()
+    LazyCraftingCertification.LLC = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
+    LazyCraftingCertification.styleId = LCCGetCurrentPlayerRacialStyleId()
+end
+ 
 function LazyCraftingCertification.OnAddOnLoaded(event, addonName)
-  -- The event fires each time *any* addon loads - but we only care about when our own addon loads.
   d("addon loaded: " .. addonName)
   if addonName == LazyCraftingCertification.name then
     LazyCraftingCertification.Initialize()
-    --unregister the event again as our addon was loaded now and we do not need it anymore to be run for each other addon that will load
     EVENT_MANAGER:UnregisterForEvent(LazyCraftingCertification.name, EVENT_ADD_ON_LOADED)
   end
 end
@@ -50,19 +48,23 @@ local function LCCGetBackbackSlotByItemName(name)
   end
   return nil
 end
-local function LCCGetCurrentPlayerRacialStyleId()
-  -- we need the pattern ID for the current character race since it'll know that pattern by default
-  -- TODO: this will probably break for imperials = imperial raceId = 10
-  local characterId = GetCurrentCharacterId()
-  for i = 1, GetNumCharacters() do
-    local name, gender, level, classId, raceId, alliance, id, locationId = GetCharacterInfo(i)
-    if (characterId == id) then
-      if raceId == 10 then return 34 end -- imperial
-      return raceId
-    end
- end
-end
+local function LCCDeconstructFirstMatchingBackpackItem(q)
+  slotIndex = LCCGetBackbackSlotByItemName(q)
+  PrepareDeconstructMessage()
+  AddItemToDeconstructMessage(BAG_BACKPACK,slotIndex,1)
+  SendDeconstructMessage()
 
+end
+local function LCCCheckCertificationQuest()
+  local count = GetNumJournalQuests()
+  for i = 1, count do
+    local name = GetJournalQuestName(i)
+    if (string.find(name,"Certification")) then
+      return true
+    end
+  end
+  return false
+end
 function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameStation)
   -- d("opened crafting station sameStation:" .. tostring(sameStation))
   local count = GetNumJournalQuests()
@@ -84,47 +86,34 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_CLOTHIER then
         if (string.find(activeStepText,"craft")) then
-          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(4, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(4, false, 1,LazyCraftingCertification.styleId ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
-          slotIndex = LCCGetBackbackSlotByItemName("Homespun Gloves")
-          PrepareDeconstructMessage()
-          AddItemToDeconstructMessage(BAG_BACKPACK,slotIndex,1)
-          SendDeconstructMessage()
+          LCCDeconstructFirstMatchingBackpackItem("Homespun Gloves")
         end
       end
-      
       if craftSkill == CRAFTING_TYPE_BLACKSMITHING then
         if (string.find(activeStepText,"craft")) then
-          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(7, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(7, false, 1,LazyCraftingCertification.styleId ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
-          slotIndex = LCCGetBackbackSlotByItemName("Iron Dagger")
-          PrepareDeconstructMessage()
-          AddItemToDeconstructMessage(BAG_BACKPACK,slotIndex,1)
-          SendDeconstructMessage()
+          LCCDeconstructFirstMatchingBackpackItem("Iron Dagger")
         end
       end
       if craftSkill == CRAFTING_TYPE_WOODWORKING then
         if (string.find(activeStepText,"craft")) then
-          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LazyCraftingCertification.styleId ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
-          slotIndex = LCCGetBackbackSlotByItemName("Maple Bow")
-          PrepareDeconstructMessage()
-          AddItemToDeconstructMessage(BAG_BACKPACK,slotIndex,1)
-          SendDeconstructMessage()
+          LCCDeconstructFirstMatchingBackpackItem("Maple Bow")
         end
       end
       if craftSkill == CRAFTING_TYPE_JEWELRYCRAFTING then
         if (string.find(activeStepText,"craft and deliver")) then --the word "craft" appears in the decon step
-          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LazyCraftingCertification.styleId ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
-          slotIndex = LCCGetBackbackSlotByItemName("Pewter Ring")
-          PrepareDeconstructMessage()
-          AddItemToDeconstructMessage(BAG_BACKPACK,slotIndex,1)
-          SendDeconstructMessage()
+          LCCDeconstructFirstMatchingBackpackItem("Pewter Ring")
         end
       end
 
@@ -139,9 +128,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
 end
 local function LCCScratch()
 end
--- Finally, we'll register our event handler function to be called when the proper event occurs.
--->This event EVENT_ADD_ON_LOADED will be called for EACH of the addns/libraries enabled, this is why there needs to be a check against the addon name
--->within your callback function! Else the very first addon loaded would run your code + all following addons too.
+
 EVENT_MANAGER:RegisterForEvent(LazyCraftingCertification.name, EVENT_ADD_ON_LOADED, LazyCraftingCertification.OnAddOnLoaded)
 EVENT_MANAGER:RegisterForEvent(LazyCraftingCertification.name, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, LazyCraftingCertification.InventoryChange)
 EVENT_MANAGER:AddFilterForEvent(LazyCraftingCertification.name, EVENT_INVENTORY_SINGLE_SLOT_UPDATE, REGISTER_FILTER_IS_NEW_ITEM, true)
