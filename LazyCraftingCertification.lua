@@ -42,13 +42,14 @@ local function LCCGetBackbackSlotByItemName(name)
   end
   return nil
 end
-local function LCCGetCurrentPlayerRacialPatternId()
+local function LCCGetCurrentPlayerRacialStyleId()
   -- we need the pattern ID for the current character race since it'll know that pattern by default
-  -- TODO: this will probably break for imperials
+  -- TODO: this will probably break for imperials = imperial raceId = 10
   local characterId = GetCurrentCharacterId()
   for i = 1, GetNumCharacters() do
     local name, gender, level, classId, raceId, alliance, id, locationId = GetCharacterInfo(i)
     if (characterId == id) then
+      if raceId == 10 then; return 34; end -- imperial
       return raceId
     end
  end
@@ -74,7 +75,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_CLOTHIER then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(4, false, 1,LCCGetCurrentPlayerRacialPatternId() ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
+          LLC_Global:CraftSmithingItemByLevel(4, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Homespun Gloves")
@@ -86,7 +87,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       
       if craftSkill == CRAFTING_TYPE_BLACKSMITHING then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(7, false, 1,LCCGetCurrentPlayerRacialPatternId() ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
+          LLC_Global:CraftSmithingItemByLevel(7, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Iron Dagger")
@@ -97,7 +98,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_WOODWORKING then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialPatternId() ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
+          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Maple Bow")
@@ -108,7 +109,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_JEWELRYCRAFTING then
         if (string.find(activeStepText,"craft and deliver")) then --the word "craft" appears in the decon step
-          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialPatternId() ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
+          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Pewter Ring")
@@ -120,7 +121,8 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
 
       
       
-      -- /script  patternName, baseName, _, numMaterials, numTraitsRequired, numTraitsKnown, resultingItemFilterType = GetSmithingPatternInfo(3); d(patternName)
+      -- /script  local patternName, baseName, _, numMaterials, numTraitsRequired, numTraitsKnown, resultingItemFilterType = GetSmithingPatternInfo(3); d(patternName)
+      -- /script  local name, gender, level, classId, raceId, alliance, id, locationId = GetCharacterInfo(1); d(raceId)
       -- /script LLC_Global:CraftSmithingItemByLevel(4, false, 1,5 ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
 
     end
