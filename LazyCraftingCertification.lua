@@ -2,17 +2,25 @@ LazyCraftingCertification = {}
  
 -- This isn't strictly necessary, but we'll use this string later when registering events.
 -- Better to define it in a single place rather than retyping the same string.
-LazyCraftingCertification.name = "Lazy Crafting Certification"
+LazyCraftingCertification.name = "LazyCraftingCertification"
  
 -- Next we create a function that will initialize our addon
 function LazyCraftingCertification.Initialize()
   -- ...but we don't have anything to initialize yet. We'll come back to this.
+  	-- AddRequestingAddon(addonName, autocraft, functionCallback, optionalDebugAuthor, styleTable)
+    -- local interactionTable = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.ADDON_NAME, true, LLC_CallbackFunction, debugAuthor, styles)
+    -- LazyAlchemyLearner.LLC = LibLazyCrafting:AddRequestingAddon(LazyAlchemyLearner.name,true, function()end)
+    -- local interactionTable = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
+    d("FGHDHSH loaded up ")
+    LazyCraftingCertification.LLC = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
+  
 end
  
 -- Then we create an event handler function which will be called when the "addon loaded" event
 -- occurs. We'll use this to initialize our addon after all of its resources are fully loaded.
 function LazyCraftingCertification.OnAddOnLoaded(event, addonName)
   -- The event fires each time *any* addon loads - but we only care about when our own addon loads.
+  d("addon loaded: " .. addonName)
   if addonName == LazyCraftingCertification.name then
     LazyCraftingCertification.Initialize()
     --unregister the event again as our addon was loaded now and we do not need it anymore to be run for each other addon that will load
@@ -49,7 +57,7 @@ local function LCCGetCurrentPlayerRacialStyleId()
   for i = 1, GetNumCharacters() do
     local name, gender, level, classId, raceId, alliance, id, locationId = GetCharacterInfo(i)
     if (characterId == id) then
-      if raceId == 10 then; return 34; end -- imperial
+      if raceId == 10 then return 34 end -- imperial
       return raceId
     end
  end
@@ -62,20 +70,21 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
     local name = GetJournalQuestName(i)
     if (string.find(name,"Certification")) then
       local questName, backgroundText, activeStepText, activeStepType, activeStepTrackerOverrideText, completed, tracked, questLevel, pushed, questType,_ = GetJournalQuestInfo(i)
+      -- local LLC = LibLazyCrafting:AddRequestingAddon(LazyCraftingCertification.name, true, function()end)
       -- d("questName:" .. questName .. " activeStepType:" .. activeStepType .. " activeStepText:" .. activeStepText)
 
       if craftSkill == CRAFTING_TYPE_PROVISIONING then
-        LLC_Global:CraftProvisioningItemByRecipeId(45911) -- roast pig
+        LazyCraftingCertification.LLC:CraftProvisioningItemByRecipeId(45911) -- roast pig
       end
       if craftSkill == CRAFTING_TYPE_ENCHANTING then
-        LLC_Global:CraftEnchantingItemId(45855, 45831, 45850) -- jora, oko, ta
+        LazyCraftingCertification.LLC:CraftEnchantingItemId(45855, 45831, 45850) -- jora, oko, ta
       end
       if craftSkill == CRAFTING_TYPE_ALCHEMY then
-        LLC_Global:CraftAlchemyItemId(883, 30164,30163,nil, 1, true,'1')
+        LazyCraftingCertification.LLC:CraftAlchemyItemId(883, 30164,30163,nil, 1, true,'1')
       end
       if craftSkill == CRAFTING_TYPE_CLOTHIER then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(4, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(4, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_CLOTHIER, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Homespun Gloves")
@@ -87,7 +96,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       
       if craftSkill == CRAFTING_TYPE_BLACKSMITHING then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(7, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(7, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_BLACKSMITHING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Iron Dagger")
@@ -98,7 +107,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_WOODWORKING then
         if (string.find(activeStepText,"craft")) then
-          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_WOODWORKING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Maple Bow")
@@ -109,7 +118,7 @@ function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameSt
       end
       if craftSkill == CRAFTING_TYPE_JEWELRYCRAFTING then
         if (string.find(activeStepText,"craft and deliver")) then --the word "craft" appears in the decon step
-          LLC_Global:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
+          LazyCraftingCertification.LLC:CraftSmithingItemByLevel(1, false, 1,LCCGetCurrentPlayerRacialStyleId() ,1 ,false, CRAFTING_TYPE_JEWELRYCRAFTING, 0, 1,true) 
         end
         if (string.find(activeStepText,"deconstruct")) then
           slotIndex = LCCGetBackbackSlotByItemName("Pewter Ring")
