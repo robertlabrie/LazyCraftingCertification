@@ -1,8 +1,8 @@
 ## Title: Lazy Crafting Certification
 ## APIVersion: 101040
 ## Description: Complete crafting certification with fewer clicks
-## DependsOn: LibLazyCrafting
-## Version: 0.0.1
+## DependsOn: LibLazyCrafting>=3086
+## Version: 1.0.0
 ## Author: robertlabrie
 
 LazyCraftingCertification.lua
