@@ -27,23 +27,33 @@ function LazyCraftingCertification.OnAddOnLoaded(event, addonName)
 end
 local function LCCCheckCertificationQuest()
   local count = GetNumJournalQuests()
+  local questCraftingType = nil
   for i = 1, count do
     local name = GetJournalQuestName(i)
     if (string.find(name,"Certification")) then
       local questName, backgroundText, activeStepText, activeStepType, activeStepTrackerOverrideText, completed, tracked, questLevel, pushed, questType,_ = GetJournalQuestInfo(i)
+      -- TODO: this should be a table but ... 
+      if (string.find(name,"Provisioner")) then questCraftingType = CRAFTING_TYPE_PROVISIONING end
+      if (string.find(name,"Enchanter")) then questCraftingType = CRAFTING_TYPE_ENCHANTING end
+      if (string.find(name,"Alchemist")) then questCraftingType = CRAFTING_TYPE_ALCHEMY end
+      if (string.find(name,"Clothier")) then questCraftingType = CRAFTING_TYPE_CLOTHIER end
+      if (string.find(name,"Blacksmith")) then questCraftingType = CRAFTING_TYPE_BLACKSMITHING end
+      if (string.find(name,"Woodworker")) then questCraftingType = CRAFTING_TYPE_WOODWORKING end
+      if (string.find(name,"Jewelry")) then questCraftingType = CRAFTING_TYPE_JEWELRYCRAFTING end
+
       if (string.find(activeStepText,"deconstruct")) then
-        return true,LCC_STEP_DECON
+        return true,LCC_STEP_DECON,questCraftingType
       end
       if (string.find(activeStepText,"craft and deliver")) then
-        return true,LCC_STEP_CRAFT
+        return true,LCC_STEP_CRAFT,questCraftingType
       end
-      return true,nil
+      return true,nil,questCraftingType
     end
   end
-  return false,nil
+  return false,nil,questCraftingType
 end
 function LazyCraftingCertification.InventoryChange(eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason, stackCountChange)
-  local isQuest,questStep = LCCCheckCertificationQuest()
+  local isQuest,questStep,questCraftingType = LCCCheckCertificationQuest()
   if isQuest == false then return end -- bail if not in a certification quest
   local link = GetItemLink(bagId, slotIndex)
   if (link == "|H0:item:55462:3:1:0:0:0:0:0:0:0:0:0:0:0:1:0:0:1:0:0:0|h|h") then 
@@ -70,8 +80,9 @@ local function LCCDeconstructFirstMatchingBackpackItem(q)
 end
 
 function LazyCraftingCertification.CraftingStation(eventCode, craftSkill, sameStation)
-  local isQuest,questStep = LCCCheckCertificationQuest()
+  local isQuest,questStep,questCraftingType = LCCCheckCertificationQuest()
   if isQuest == false then return end -- bail if not in a certification quest
+  if questCraftingType ~= craftSkill then return end -- bail if we're not at the right station for this quest
   if craftSkill == CRAFTING_TYPE_PROVISIONING then
     LazyCraftingCertification.LLC:CraftProvisioningItemByRecipeId(45911) -- roast pig
   end
